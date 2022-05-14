@@ -1,3 +1,6 @@
 ckpts
 runs
 **/.DS_Store
+**/.vscode/
+**/.ipynb_checkpoints/
+ADL21-HW1/
