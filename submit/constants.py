@@ -122,7 +122,6 @@ selected_features_fugle =[
 
 cat_features_fugle = ['occupation', 'hasOtherComAccount', 'lead_job_id']
 
-
 # ESUN
 selected_features_esun =[
     'source',

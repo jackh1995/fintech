@@ -48,7 +48,7 @@ def find_most_similar_job(job_name: str, job_list: list[str]) -> int:
     '''給定職業名回傳最相似的職業id'''
     score_list = []
     for x in job_list:
-        score_list.append(nltk.edit_distance(list(x), list(job_name)))
+        score_list.append(nltk.edit_distance(list(x), list(job_name))) # 字串編輯距離
     return np.argsort(score_list)[0]
 
 def get_lead_job_name(job_name: str, job_list: list[str], lead_list: list[int]) -> str:
@@ -57,23 +57,24 @@ def get_lead_job_name(job_name: str, job_list: list[str], lead_list: list[int]) 
 
 
 def get_salary(job_name_str, job_list, lead_list, esun_occ_id, salary_backup):
-    rel_val = [   
-        1.8282004788567674,
-        0.6560752369233088,
-        0.0062653633495642356,
-        -0.5315773430784837,
-        -0.2968502431305844,
-        -0.34361245855107936,
-        -1.3185010343694934
+    # Note: rel_val might lead to some negative salary values
+    rel_val = [
+        2 + 1.8282004788567674,
+        2 + 0.6560752369233088,
+        2 + 0.0062653633495642356,
+        2 + -0.5315773430784837,
+        2 + -0.2968502431305844,
+        2 + -0.34361245855107936,
+        2 + -1.3185010343694934
     ]
     lead_job_id = lead_job_str_to_id[get_lead_job_name(job_name_str, job_list, lead_list)]
     occ_id = esun_occ_id_to_gov_occ_id(esun_occ_id)
     if occ_id >= 0:
         return int(df_industry.iloc[lead_job_id, occ_id].replace(',', ""))
     else:
-        if occ_id in {-1, -15}:
+        if occ_id in {-12, -15}:
             return int(salary_backup.iloc[-occ_id, 1] * (1 + rel_val[lead_job_id])) // 12
-        else:
+        else: # -1
             return int(salary_backup.iloc[-occ_id, 1]) // 12
 
 if __name__ == '__main__':
@@ -90,11 +91,12 @@ if __name__ == '__main__':
 
     # ----------------------------------- MAIN ----------------------------------- #
     
-    job_name = '老師'
-    occ_id = 7
+    job_name = '工程師'
+    occ_id = 13
     
     job_list, lead_list = get_job_list()
-    lead_job = get_lead_job_name('老師', job_list, lead_list)
+
+    lead_job = get_lead_job_name(job_name, job_list, lead_list)
     
     salary = get_salary(job_name, job_list, lead_list, occ_id, salary_backup)
 
@@ -102,5 +104,5 @@ if __name__ == '__main__':
     print(f'    Job name: {job_name}')
     print(f'    Occupation ID: {occ_id}')
     print('Output:')
-    print(f'    Job class: {lead_job}')
+    print(f'    Job class (lead job ID): {lead_job}')
     print(f'    Estimated salary: {salary}')

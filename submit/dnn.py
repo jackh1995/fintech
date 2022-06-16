@@ -23,7 +23,7 @@ def to_class(x):
     30~50萬(不含30萬)
     50~100萬(不含50萬)
     '''
-    if x < 1E5:
+    if 0 <= x and x < 1E5:
         return 0
     if 1E5 <= x and x < 3E5:
         return 1
@@ -45,8 +45,8 @@ def read_data(data_csv='./data/ooa_features_v1.csv', source=None, selected_featu
 
     # define the label to predict
     df_all['y_num'] = df_all[['quota_now', 'quota_now_elec']].apply(lambda x: make_quota(*x), axis=1)
-    df_all = df_all[df_all['quota_now']<=1e6]
-    df_all['y_cat'] = df_all['quota_now'].apply(lambda x: to_class(x))
+    df_all = df_all[df_all['y_num']<=1e6]
+    df_all['y_cat'] = df_all['y_num'].apply(lambda x: to_class(x))
     df_all = df_all.drop(['quota_now', 'quota_now_elec'], axis=1)
 
     # drop: isReject
@@ -213,14 +213,14 @@ if __name__ == '__main__':
     test_size = 0.015
     n_epoch = 200
     patience = 0
-    n_patience = 5
+    n_patience = 10
 
     # ---------------------------------------------------------------------------- #
     #                                    SOURCE                                    #
     # ---------------------------------------------------------------------------- #
 
-    source = 'FUGLE'
-    # source = 'ESUN'
+    # source = 'FUGLE'
+    source = 'ESUN'
     if source == 'FUGLE':
         selected_features = selected_features_fugle
         cat_features = cat_features_fugle
@@ -256,6 +256,7 @@ if __name__ == '__main__':
 
     n_input = len(df_x.columns)
     model = MyNetwork(n_input)
+    print(model)
     device = torch.device("cuda:0" if torch.cuda.is_available else "cpu")
     model.to(device)
     optimizer=optim.Adam(model.parameters())

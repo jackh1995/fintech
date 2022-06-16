@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from regex import V1
 from scipy import stats
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import precision_recall_fscore_support as score
@@ -61,21 +62,21 @@ def get_weights(df_x: pd.DataFrame, df_y: pd.DataFrame):
     return np.log(df_scores[0].values)
 
 def get_distance(x: np.array, y: np.array, num_features, cat_features, weights=None) -> float:
-    """Compute the distance between the instance x and y (numpy arrays)."""
+    """Compute the distance between instance x and y (numpy arrays)."""
 
     n_num = len(num_features)
     n_cat = len(cat_features)
 
     res = 0
 
-    if weights is not None:
+    if weights is not None: # weighted sum
         for i in range(n_num):
             res += (float(x[i]) - float(y[i]))**2 * weights[i]
 
         for i in range(n_num, n_num+n_cat):
             if x[i] != y[i]:
                 res += weights[i]
-    else:
+    else: # no weighted sum
         for i in range(n_num):
             res += (float(x[i]) - float(y[i]))**2
 
@@ -105,8 +106,8 @@ def read_data(data_csv='./data/ooa_features_v1.csv', source=None, selected_featu
 
     # define the label to predict
     df_all['y_num'] = df_all[['quota_now', 'quota_now_elec']].apply(lambda x: make_quota(*x), axis=1)
-    df_all = df_all[df_all['quota_now']<=1e6]
-    df_all['y_cat'] = df_all['quota_now'].apply(lambda x: to_class(x))
+    df_all = df_all[df_all['y_num']<=1E6]
+    df_all['y_cat'] = df_all['y_num'].apply(lambda x: to_class(x))
     df_all = df_all.drop(['quota_now', 'quota_now_elec'], axis=1)
 
     # drop: isReject
@@ -148,12 +149,12 @@ def read_data(data_csv='./data/ooa_features_v1.csv', source=None, selected_featu
 if __name__ == '__main__':
     
     # knn constants
-    n_neighbors = 2
+    n_neighbors = 6
     seed = 840519
     test_size = 0.015
     
-    # source = 'FUGLE'
-    source = 'ESUN'
+    source = 'FUGLE'
+    # source = 'ESUN'
     if source == 'FUGLE':
         selected_features = selected_features_fugle
         cat_features = cat_features_fugle
